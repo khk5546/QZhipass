@@ -1,36 +1,47 @@
 package org.microsoft.qintelipass.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.microsoft.qintelipass.dtos.UserDTO;
 import org.microsoft.qintelipass.enums.UserStatus;
 import org.microsoft.qintelipass.models.User;
+import org.microsoft.qintelipass.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
+@Slf4j
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
+
     @Autowired
-    private RedisTemplate<String, Long> redisTemplate;
-    private static final String USER_KEY_PREFIX = "user:";
-    private static final String PHONE_INDEX_PREFIX = "user:phone:";
-    private static final String WECHAT_INDEX_PREFIX = "user:wechat:";
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserCacheService userCacheService;
 
     @Override
     public User getUserById(Long userId) {
         if (userId == null) {
             return null;
         }
-        String key = USER_KEY_PREFIX + userId;
-        Map<?, ?> data = redisTemplate.opsForHash().entries(key);
 
-        if (data == null || data.isEmpty()) {
-            return null;
+        UserDTO cachedUser = userCacheService.getCachedUserById(userId);
+        if (cachedUser != null) {
+            log.debug("User found in cache: {}", userId);
+            return cachedUser.toUser();
         }
-        return mapToUser(userId.toString(), data);
+
+        log.debug("User not in cache, fetching from database: {}", userId);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            userCacheService.cacheUser(UserDTO.fromUser(user));
+            return user;
+        }
+        return null;
     }
 
     @Override
@@ -38,80 +49,74 @@ public class UserServiceImpl implements UserService{
         if (phone == null || phone.trim().isEmpty()) {
             return null;
         }
-        Long userId = redisTemplate.opsForValue().get(PHONE_INDEX_PREFIX + phone);
-        if (userId == null) {
-            return null;
+
+        UserDTO cachedUser = userCacheService.getCachedUserByPhone(phone);
+        if (cachedUser != null) {
+            log.debug("User found in cache by phone: {}", phone);
+            return cachedUser.toUser();
         }
-        return getUserById(userId);
+
+        log.debug("User not in cache, fetching from database by phone: {}", phone);
+        Optional<User> userOpt = userRepository.findByPhone(phone);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            userCacheService.cacheUser(UserDTO.fromUser(user));
+            return user;
+        }
+        return null;
     }
 
     @Override
     public User getUserByWechatOpenId(String wechatOpenId) {
-        if (wechatOpenId == null || wechatOpenId.trim().isEmpty()) {
-            return null;
-        }
-        Long userId = redisTemplate.opsForValue().get(WECHAT_INDEX_PREFIX + wechatOpenId);
-        if (userId == null) {
-            return null;
-        }
-        return getUserById(userId);
+        return null;
     }
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
-        var keys = redisTemplate.keys(USER_KEY_PREFIX + "*");
-        if (keys != null) {
-            for (String key : keys) {
-                if (redisTemplate.type(key) != null && redisTemplate.type(key).name().equals("HASH")) {
-
-                    Map<?, ?> data = redisTemplate.opsForHash().entries(key);
-                    String userId = key.replace(USER_KEY_PREFIX, "");
-                    users.add(mapToUser(userId, data));
-                }
-            }
-        }
-        return users;
+        return userRepository.findAll();
     }
 
     @Override
+    @Transactional
     public void saveUser(User user) {
-        if (user == null || user.getId() == null) {
+        if (user == null) {
             return;
         }
-        String key = USER_KEY_PREFIX + user.getId();
-        redisTemplate.opsForHash().put(key, "phone", user.getPhone() != null ? user.getPhone() : "");
-        redisTemplate.opsForHash().put(key, "wechatOpenId", user.getWechatOpenId() != null ? user.getWechatOpenId() : "");
-        redisTemplate.opsForHash().put(key, "status", user.getStatus() != null ? user.getStatus().name() : UserStatus.NORMAL.name());
-        redisTemplate.opsForHash().put(key, "name", user.getName() != null ? user.getName() : "");
 
-        if (user.getPhone() != null && !user.getPhone().isEmpty()) {
-            redisTemplate.opsForValue().set(PHONE_INDEX_PREFIX + user.getPhone(), user.getId());
-        }
-        if (user.getWechatOpenId() != null && !user.getWechatOpenId().isEmpty()) {
-            redisTemplate.opsForValue().set(WECHAT_INDEX_PREFIX + user.getWechatOpenId(), user.getId());
-        }
+        User savedUser = userRepository.save(user);
+        log.info("User saved to database: {}", savedUser.getId());
+
+        userCacheService.cacheUser(UserDTO.fromUser(savedUser));
+        log.debug("User cached: {}", savedUser.getId());
     }
 
     @Override
+    @Transactional
     public boolean deactivateUser(Long userId) {
         if (userId == null) {
             return false;
         }
-        User user = getUserById(userId);
-        if (user == null) {
+
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
             return false;
         }
+
+        User user = userOpt.get();
         if (UserStatus.DEACTIVATED.equals(user.getStatus())) {
             return false;
         }
+
         user.setStatus(UserStatus.DEACTIVATED);
-        saveUser(user);
+        User savedUser = userRepository.save(user);
+
+        userCacheService.cacheUser(UserDTO.fromUser(savedUser));
+
         return true;
     }
 
     @Override
-    public boolean isUserDeactivated(Long userId)  {
+    public boolean isUserDeactivated(Long userId) {
         if (userId == null) {
             return false;
         }
@@ -119,23 +124,12 @@ public class UserServiceImpl implements UserService{
         return user != null && UserStatus.DEACTIVATED.equals(user.getStatus());
     }
 
-    private User mapToUser(String userId, Map<?, ?> data) {
-        UserDTO.Builder userBuilder = UserDTO
-                .builder()
-                .userId(Long.parseLong(userId))
-                .phone((String) data.get("phone"))
-                .wechatOpenId((String) data.get("wechatOpenId"));
-        userBuilder.name((String) data.get("name"));
-        String statusStr = (String) data.get("status");
-
-        if (statusStr != null) {
-            try {
-                return userBuilder.status(UserStatus.valueOf(statusStr)).build();
-            } catch (IllegalArgumentException e) {
-                return userBuilder.status(UserStatus.NORMAL).build();
-            }
-        } else {
-            return userBuilder.status(UserStatus.NORMAL).build();
+    @Override
+    public User findByUsername(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return null;
         }
+        Optional<User> userOpt = userRepository.findByName(username);
+        return userOpt.orElse(null);
     }
 }

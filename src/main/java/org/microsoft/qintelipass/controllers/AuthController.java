@@ -1,37 +1,63 @@
 package org.microsoft.qintelipass.controllers;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.microsoft.qintelipass.ILoginStrategy;
 import org.microsoft.qintelipass.LoginStrategyFactory;
+import org.microsoft.qintelipass.models.User;
 import org.microsoft.qintelipass.request.LoginRequest;
 import org.microsoft.qintelipass.response.ResponseBody;
 import org.microsoft.qintelipass.services.SmsServiceImpl;
+import org.microsoft.qintelipass.services.UserDetailsServiceImpl;
+import org.microsoft.qintelipass.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("api/v1/portal")
+@RequestMapping("api/v1/auth/portal")
 public class AuthController {
+    private final LoginStrategyFactory factory;
+    private final SmsServiceImpl smsService;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsServiceImpl userDetailsService;
+
+    private static final String COOKIE_ROOT = "/";
+    private static final Integer EXPIRATION = 7 * 24 * 60 * 60;
+    private static final String HEADER = "Authorization";
     @Autowired
-    private LoginStrategyFactory factory;
-    @Autowired
-    private SmsServiceImpl smsService;
+    public AuthController(LoginStrategyFactory factory, SmsServiceImpl smsService, JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
+        this.factory = factory;
+        this.smsService = smsService;
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest formData){
+    public ResponseEntity<?> login(@RequestBody LoginRequest formData, HttpServletResponse httpResponse){
         String loginType = formData.getLoginType();
         Map<String, Object> params = formData.getParams();
         ILoginStrategy strategy = factory.getStrategy(loginType);
         log.info("User response: {}", formData);
-        ResponseBody response = strategy.authenticate(params);
+        ResponseBody<User> response = strategy.authenticate(params);
         log.info("Authenticator response: {}", response);
-        if (response.isSuccess()) {
+        User user = response.getPayload();
+        if (response.isSuccess() && user != null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getName());
+            String token = jwtUtil.generateToken(userDetails);
+
+            Cookie userIdCookie = new Cookie("user_id", String.valueOf(user.getId()));
+            Cookie auth = new Cookie(HEADER, token);
+            userIdCookie.setPath(COOKIE_ROOT);
+            userIdCookie.setMaxAge(EXPIRATION);
+            auth.setPath(COOKIE_ROOT);
+            auth.setMaxAge(EXPIRATION);
+            httpResponse.addCookie(auth);
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.badRequest().body(response);
@@ -43,6 +69,22 @@ public class AuthController {
             String code = smsService.sendSmsCode(payload.get("phone"));
             log.info("Sent sms code: {}", code);
         }
-        return ResponseEntity.badRequest().body(new ResponseBody(false, "phone number should not be null,"));
+        return ResponseEntity
+                .badRequest()
+                .body(ResponseBody
+                        .builder()
+                        .success(false)
+                        .message("phone number should not be null")
+                );
+    }
+
+    @DeleteMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletResponse httpResponse){
+        Cookie userIdCookie = new Cookie("user_id", "");
+        userIdCookie.setPath("/");
+        userIdCookie.setMaxAge(0);
+        httpResponse.addCookie(userIdCookie);
+
+        return ResponseEntity.ok(Map.of("success",true,"message", "成功退出登录"));
     }
 }

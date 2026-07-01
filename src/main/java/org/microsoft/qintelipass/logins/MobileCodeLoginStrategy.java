@@ -37,24 +37,24 @@ public class MobileCodeLoginStrategy implements ILoginStrategy {
         log.info("User phone: {}, User smsCode: {}", phone, smsCode);
         
         if (smsCode == null || phone == null){
-            return new ResponseBody(false, "smsCode or phone number could not be NULL.");
+            return ResponseBody.builder().success(false).message("smsCode or phone number could not be NULL.").build();
         }
         if (this.validate(phone, smsCode)){
-            return new ResponseBody(false, "Invalid smsCode or phone.");
+            return ResponseBody.builder().success(false).message("Invalid smsCode or phone.").build();
         }
         
         User user = userService.getUserByPhone(phone);
         if (user != null && UserStatus.DEACTIVATED.equals(user.getStatus())) {
-            return new ResponseBody(false, "Your account has been deactivated");
+            return ResponseBody.builder().success(false).message("Your account has been deactivated").build();
         }
         
         String targetSmsCode = redisService.getValue(phone);
 
         if (targetSmsCode != null) {
             if (targetSmsCode.equals(smsCode)){
-                return new ResponseBody(true, "Login Successful.");
+                return ResponseBody.builder().success(true).message("Login Successful.").build();
             }
         }
-        return new ResponseBody(false, "Wrong smsCode.");
+        return ResponseBody.builder().success(false).message("Wrong smsCode.").build();
     }
 }

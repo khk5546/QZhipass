@@ -29,18 +29,18 @@ public class WechatLoginStrategy implements ILoginStrategy {
         log.info("Wechat login attempt for openid: {}", wechatOpenId);
         
         if (wechatOpenId == null || wechatOpenId.isEmpty()) {
-            return new ResponseBody(false, "Wechat openid could not be NULL.");
+            return ResponseBody.builder().success(false).message("Wechat openid could not be NULL.").build();
         }
         
         User user = userService.getUserByWechatOpenId(wechatOpenId);
         if (user == null) {
-            return new ResponseBody(false, "User not found.");
+            return ResponseBody.builder().success(false).message("User not found.").build();
         }
         
         if (UserStatus.DEACTIVATED.equals(user.getStatus())) {
-            return new ResponseBody(false, "Your account has been deactivated");
+            return ResponseBody.builder().success(false).message("Your account has been deactivated").build();
         }
         
-        return new ResponseBody(true, "Login Successful.");
+        return ResponseBody.builder().success(true).message("Login Successful.").build();
     }
 }
