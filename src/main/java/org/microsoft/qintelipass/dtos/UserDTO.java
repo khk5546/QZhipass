@@ -3,6 +3,7 @@ package org.microsoft.qintelipass.dtos;
 import lombok.*;
 import org.microsoft.qintelipass.enums.UserStatus;
 import org.microsoft.qintelipass.models.User;
+import org.microsoft.qintelipass.util.Snowflake;
 
 import java.time.OffsetDateTime;
 
@@ -12,12 +13,12 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private Long id;
+    private Long id = Snowflake.nextId();
     private String phone;
     private String email;
-    private UserStatus status;
+    private UserStatus status = UserStatus.NORMAL;
     private String name;
-    private OffsetDateTime joinedAt;
+    private OffsetDateTime joinedAt = OffsetDateTime.now();
 
     public static UserDTO fromUser(User user) {
         return UserDTO.builder()

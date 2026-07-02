@@ -7,11 +7,13 @@ public class QZhiPasswordPattern {
     private static final Pattern USER_PATTERN = Pattern.compile("[A-Za-z0-9]{8,20}");
     public static class Generator {
         private static final String charSequence = "1234567890qwertyuiopasdfghjklzxcvbnm";
-        private final StringBuilder stringBuilder = new StringBuilder();
+        private StringBuilder stringBuilder;
         public String generate(){
+            this.stringBuilder = new StringBuilder();
             ThreadLocalRandom
                     .current()
-                    .ints(charSequence.length() + 1)
+                    .ints(0,charSequence.length())
+                    .limit(8)
                     .forEach((i)-> stringBuilder.append(charSequence.charAt(i))
             );
             return stringBuilder.toString();

@@ -1,38 +1,40 @@
 package org.microsoft.qintelipass.models;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.microsoft.qintelipass.enums.UserStatus;
+import org.microsoft.qintelipass.util.Snowflake;
 
 import java.time.OffsetDateTime;
 
 @Setter
 @Getter
 @ToString
+@Builder
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userId", updatable = false, nullable = false)
-    private Long id;
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id", updatable = false, nullable = false, unique = true)
+    private Long id = Snowflake.nextId();
     @Column(name = "phone", nullable = false, unique = true)
     private String phone;
     @Column(name = "email", unique = true)
     private String email;
-    @Column(name = "passwordHash")
+    @Column(name = "password_hash")
     private String passwordHash;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private UserStatus status;
+    private UserStatus status = UserStatus.NORMAL;
     @Column(name = "username", nullable = false)
     private String name;
     @CreationTimestamp
-    @Column(name = "joinedAt", nullable = false, updatable = false)
-    private OffsetDateTime joinedAt;
+    @Column(name = "joined_at", nullable = false, updatable = false)
+    private OffsetDateTime joinedAt = OffsetDateTime.now();
 
     @PrePersist
     protected void onCreate() {

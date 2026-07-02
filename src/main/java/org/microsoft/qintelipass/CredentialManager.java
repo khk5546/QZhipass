@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 public class CredentialManager {
     @Autowired
     private UserService userService;
-
     private final JwtUtil jwtUtil;
     @Autowired
     public CredentialManager(JwtUtil jwtUtil) {

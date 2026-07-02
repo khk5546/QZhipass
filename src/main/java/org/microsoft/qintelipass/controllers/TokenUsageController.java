@@ -22,8 +22,8 @@ public class TokenUsageController {
 
     @GetMapping("/usage")
     public ResponseEntity<ResponseBody<UserTokenUsageDTO>> getUserUsage() {
-//        SecurityUtil.requireAuthentication();
-        Long userId = 1L;//SecurityUtil.getCurrentUserId();
+        SecurityUtil.requireAuthentication();
+        Long userId = SecurityUtil.getCurrentUserId();
         log.info("Getting token usage for authenticated user: {}", userId);
 
         UserTokenUsageDTO usage = tokenUsageService.getUserTokenUsage(userId);
@@ -36,8 +36,8 @@ public class TokenUsageController {
 
     @GetMapping("/check")
     public ResponseEntity<ResponseBody<Map<String, Object>>> checkLimit() {
-//        SecurityUtil.requireAuthentication();
-        Long userId = 1L;//SecurityUtil.getCurrentUserId();
+        SecurityUtil.requireAuthentication();
+        Long userId = SecurityUtil.getCurrentUserId();
         log.info("Checking token limit for authenticated user: {}", userId);
 
         boolean canProceed = tokenUsageService.checkTokenLimit(userId);
@@ -50,57 +50,6 @@ public class TokenUsageController {
                         "canProceed", canProceed,
                         "usage", usage
                 ))
-                .build());
-    }
-
-    @PostMapping("/usage")
-    public ResponseEntity<ResponseBody<Map<String, Object>>> recordUsage() {
-//        SecurityUtil.requireAuthentication();
-        Long userId = 1L;//SecurityUtil.getCurrentUserId();
-        log.info("Recording token usage for authenticated user: {}", userId);
-
-        boolean canProceed = tokenUsageService.checkTokenLimit(userId);
-        if (!canProceed) {
-            return ResponseEntity.badRequest().body(
-                    ResponseBody.<Map<String, Object>>builder()
-                            .success(false)
-                            .message("Token limit exceeded, cannot record additional usage")
-                            .build()
-            );
-        }
-
-        int mockToken = 10343;
-        boolean recorded = tokenUsageService.recordTokenUsage(userId, mockToken);
-        UserTokenUsageDTO usage = tokenUsageService.getUserTokenUsage(userId);
-
-        return ResponseEntity.ok(ResponseBody.<Map<String, Object>>builder()
-                .success(recorded)
-                .message("Token usage recorded successfully")
-                .payload(Map.of("usage", usage))
-                .build());
-    }
-
-    @PutMapping("/limit")
-    public ResponseEntity<ResponseBody<Void>> setUserLimit(
-            @RequestBody Map<String, Long> requestBody) {
-//        SecurityUtil.requireAuthentication();
-        Long userId = 1L;//SecurityUtil.getCurrentUserId();
-        log.info("Setting token limit for authenticated user: {}", userId);
-
-        Long limit = requestBody.get("limit");
-        if (limit == null || limit < 0) {
-            return ResponseEntity.badRequest().body(
-                    ResponseBody.<Void>builder()
-                            .success(false)
-                            .message("Invalid token limit")
-                            .build()
-            );
-        }
-
-        tokenUsageService.setUserTokenLimit(userId, limit);
-        return ResponseEntity.ok(ResponseBody.<Void>builder()
-                .success(true)
-                .message("Token limit updated successfully")
                 .build());
     }
 }
@@ -127,6 +76,31 @@ class TokenUsageAdminController {
                 .success(true)
                 .message("Daily token usage rank retrieved successfully")
                 .payload(rank)
+                .build());
+    }
+
+    @PutMapping("/limit/{userId}")
+    public ResponseEntity<ResponseBody<Void>> setUserLimit(
+            @PathVariable Long userId,
+            @RequestBody Map<String, Long> requestBody) {
+        SecurityUtil.requireAuthentication();
+        Long adminUserId = SecurityUtil.getCurrentUserId();
+        log.info("Admin {} setting token limit for user: {}", adminUserId, userId);
+
+        Long limit = requestBody.get("limit");
+        if (limit == null || limit < 0) {
+            return ResponseEntity.badRequest().body(
+                    ResponseBody.<Void>builder()
+                            .success(false)
+                            .message("Invalid token limit")
+                            .build()
+            );
+        }
+
+        tokenUsageService.setUserTokenLimit(userId, limit);
+        return ResponseEntity.ok(ResponseBody.<Void>builder()
+                .success(true)
+                .message("Token limit updated successfully")
                 .build());
     }
 }

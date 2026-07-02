@@ -7,5 +7,5 @@ import java.util.Map;
 @Data
 public class LoginRequest {
     private String loginType;
-    private Map<String, Object> params;
+    private Map<String, Object> credential;
 }

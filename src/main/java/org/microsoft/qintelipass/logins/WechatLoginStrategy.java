@@ -14,10 +14,8 @@ import java.util.Map;
 @Slf4j
 @Component
 public class WechatLoginStrategy implements ILoginStrategy {
-
     @Autowired
     private UserService userService;
-
     @Override
     public String getType() {
         return "wechatLogin";

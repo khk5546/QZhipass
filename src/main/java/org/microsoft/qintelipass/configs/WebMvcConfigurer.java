@@ -8,7 +8,7 @@ public class WebMvcConfigurer implements org.springframework.web.servlet.config.
     public void addCorsMappings(CorsRegistry registry){
         registry.addMapping("/**")
                 .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST", "DELETE", "PUT", "OPTIONS")
+//                .allowedMethods("GET", "POST", "DELETE", "PUT", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
