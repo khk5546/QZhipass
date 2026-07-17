@@ -30,20 +30,10 @@ export function saveInitialConversationId(initialConversationId: number) {
 }
 
 export function readLoginInfo(): LoginInfo | null {
-  const userId = window.localStorage.getItem(USER_ID_KEY)
-  const accessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY)
-  const initialConversationId = Number(window.localStorage.getItem(INITIAL_CONVERSATION_ID_KEY))
-
-  if (!userId || !accessToken) {
-    return null
-  }
-
+  // DEV: 临时绕过登录校验
   return {
-    userId,
-    accessToken,
-    initialConversationId: Number.isFinite(initialConversationId) && initialConversationId > 0
-      ? initialConversationId
-      : undefined
+    userId: 'dev-test-user',
+    accessToken: 'dev-bypass-token',
   }
 }
 
@@ -55,9 +45,11 @@ export function clearLoginInfo() {
 }
 
 export function isLoggedIn() {
-  return Boolean(readLoginInfo())
+  // DEV: 临时绕过登录校验
+  return true
 }
 
 export function isAdmin() {
-  return window.localStorage.getItem(ROLE_KEY) === 'ADMIN'
+  // DEV: 临时设为主
+  return true
 }

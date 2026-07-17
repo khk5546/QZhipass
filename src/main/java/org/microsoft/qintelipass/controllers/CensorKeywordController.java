@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.microsoft.qintelipass.dtos.CensorKeywordDTO;
 import org.microsoft.qintelipass.entity.CensorKeyword;
 import org.microsoft.qintelipass.repository.CensorKeywordRepository;
+import org.microsoft.qintelipass.services.CensorKeywordLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +21,12 @@ import java.util.*;
 public class CensorKeywordController {
 
     private final CensorKeywordRepository censorKeywordRepository;
+    private final CensorKeywordLoader censorKeywordLoader;
 
-    public CensorKeywordController(CensorKeywordRepository censorKeywordRepository) {
+    public CensorKeywordController(CensorKeywordRepository censorKeywordRepository,
+                                   CensorKeywordLoader censorKeywordLoader) {
         this.censorKeywordRepository = censorKeywordRepository;
+        this.censorKeywordLoader = censorKeywordLoader;
     }
 
     /**
@@ -85,6 +89,7 @@ public class CensorKeywordController {
         entity.setRiskLevel(dto.getRiskLevel());
         entity.setEnabled(dto.isEnabled());
         entity = censorKeywordRepository.save(entity);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "data", toDTO(entity)));
     }
 
@@ -105,6 +110,7 @@ public class CensorKeywordController {
         if (dto.getRiskLevel() != null) entity.setRiskLevel(dto.getRiskLevel());
         entity.setEnabled(dto.isEnabled());
         entity = censorKeywordRepository.save(entity);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "data", toDTO(entity)));
     }
 
@@ -125,6 +131,7 @@ public class CensorKeywordController {
         }
         entity.setEnabled(enabled);
         entity = censorKeywordRepository.save(entity);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "data", toDTO(entity)));
     }
 
@@ -141,6 +148,7 @@ public class CensorKeywordController {
         CensorKeyword entity = opt.get();
         entity.setEnabled(true);
         entity = censorKeywordRepository.save(entity);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "data", toDTO(entity)));
     }
 
@@ -153,6 +161,7 @@ public class CensorKeywordController {
         CensorKeyword entity = opt.get();
         entity.setEnabled(false);
         entity = censorKeywordRepository.save(entity);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "data", toDTO(entity)));
     }
 
@@ -162,6 +171,7 @@ public class CensorKeywordController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "关键词不存在"));
         }
         censorKeywordRepository.deleteById(id);
+        censorKeywordLoader.refresh();
         return ResponseEntity.ok(Map.of("success", true, "message", "注销成功"));
     }
 

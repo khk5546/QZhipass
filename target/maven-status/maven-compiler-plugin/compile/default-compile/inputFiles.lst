@@ -1,9 +1,14 @@
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\AISpringConfig.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\DeepSeekApiClient.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\DeepSeekChatModel.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\DeepSeekEmbeddingModel.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\JPAConfig.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\LoginStrategyConfig.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\RedisConfig.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\SecurityConfig.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\configs\WebMvcConfigurer.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\AgentController.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\AIChatController.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\AuthController.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\CensorKeywordController.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\ConversationController.java
@@ -14,6 +19,7 @@ F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\controllers\UserCo
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\CredentialManager.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\CensorKeywordDTO.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\CensorRecordDTO.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\ChatRequestDTO.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\TokenUsageRankDTO.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\UserDTO.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\dtos\UserTokenUsageDTO.java
@@ -73,8 +79,11 @@ F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\response\ResponseB
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\security\AuthenticatedUser.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\security\JwtAuthenticationFilter.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\security\SecurityUtil.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\AIChatService.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\AIModelProviderService.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\AiModelService.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\AuthTokenService.java
+F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\CensorKeywordLoader.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\CensorService.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\ConversationService.java
 F:\Microsoft\QZhipass\src\main\java\org\microsoft\qintelipass\services\ConversationTitleGenerator.java

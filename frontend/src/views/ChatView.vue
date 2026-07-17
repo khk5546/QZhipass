@@ -29,23 +29,27 @@ const authStore = useAuthStore()
 // ========== state ==========
 const searchQuery = ref('')
 const inputText = ref('')
-const selectedModel = ref('gpt4-omni')
+const selectedModel = ref('deepseek-chat')
 const selectedAgent = ref('data-analyst')
 const selectedChatId = ref<number | null>(null)
 const showModelDropdown = ref(false)
 const showAgentDropdown = ref(false)
 const creatingConversation = ref(false)
+const aiLoading = ref(false)
 
 const tokenLimit = 100000
 const tokenUsed = 64000
 const tokenPercent = computed(() => Math.round((tokenUsed / tokenLimit) * 100))
 
+/** Model keys that have an active API key on the backend. */
+const configuredModels = new Set(['deepseek-v4', 'deepseek-chat'])
+
 const models = [
-  { value: 'gpt4-omni', label: 'GPT-4 Omni' },
-  { value: 'gpt4-turbo', label: 'GPT-4 Turbo' },
-  { value: 'claude-3.5', label: 'Claude 3.5 Sonnet' },
-  { value: 'qwen3', label: '千问3' },
-  { value: 'deepseek-v4', label: 'DeepSeek-V4' },
+  { value: 'deepseek-chat', label: 'DeepSeek (默认)', dot: 'green' },
+  { value: 'gpt4-omni', label: 'GPT-4 Omni', dot: 'grey' },
+  { value: 'gpt4-turbo', label: 'GPT-4 Turbo', dot: 'grey' },
+  { value: 'claude-3.5', label: 'Claude 3.5 Sonnet', dot: 'grey' },
+  { value: 'qwen3', label: '千问3', dot: 'grey' },
 ]
 
 const agents = [
@@ -162,7 +166,12 @@ async function createNewConversation(options: CreateConversationOptions = {}) {
 }
 
 function selectModel(val: string) {
-  selectedModel.value = val
+  if (!configuredModels.has(val)) {
+    ElMessage.warning('当前模型没有接入，已自动切换为 DeepSeek')
+    selectedModel.value = 'deepseek-chat'
+  } else {
+    selectedModel.value = val
+  }
   showModelDropdown.value = false
 }
 
@@ -194,9 +203,9 @@ function selectAgent(val: string) {
   showAgentDropdown.value = false
 }
 
-function sendMessage() {
+async function sendMessage() {
   const text = inputText.value.trim()
-  if (!text) return
+  if (!text || aiLoading.value) return
   messages.value.push({
     id: Date.now(),
     role: 'user',
@@ -208,7 +217,31 @@ function sendMessage() {
     }),
   })
   inputText.value = ''
-  nextTick(scrollToBottom)
+  await nextTick(scrollToBottom)
+
+  aiLoading.value = true
+  try {
+    const { data } = await http.post('/ai/chat', {
+      message: text,
+      modelKey: selectedModel.value
+    })
+    const aiContent = data?.content ?? data?.data?.content ?? ''
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'ai',
+      content: aiContent,
+      timestamp: new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }),
+    })
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error, 'AI 回复失败'))
+  } finally {
+    aiLoading.value = false
+    await nextTick(scrollToBottom)
+  }
 }
 
 function handleKeydown(e: KeyboardEvent) {
@@ -452,6 +485,11 @@ const agentLabel = computed(() => agents.find(a => a.value === selectedAgent.val
                   @click.stop="selectModel(m.value)"
                 >
                   <span class="flex-1 text-left">{{ m.label }}</span>
+                  <span
+                    class="inline-block h-2 w-2 rounded-full shrink-0"
+                    :class="m.dot === 'green' ? 'bg-green-500' : 'bg-gray-300'"
+                    :title="m.dot === 'green' ? '已接入' : '未接入'"
+                  ></span>
                   <svg v-if="selectedModel === m.value" class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                   </svg>
@@ -518,7 +556,7 @@ const agentLabel = computed(() => agents.find(a => a.value === selectedAgent.val
               </span>
               <button
                 class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white transition hover:bg-blue-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="!inputText.trim()"
+                :disabled="!inputText.trim() || aiLoading"
                 @click="sendMessage"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
