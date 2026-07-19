@@ -2,6 +2,7 @@ package org.microsoft.qintelipass.models;
 
 import jakarta.persistence.*;
 import org.microsoft.qintelipass.enums.UserStatus;
+import org.microsoft.qintelipass.util.Snowflake;
 
 import java.time.LocalDateTime;
 

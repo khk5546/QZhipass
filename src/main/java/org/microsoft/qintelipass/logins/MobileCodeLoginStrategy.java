@@ -8,23 +8,24 @@ import org.microsoft.qintelipass.response.ResponseBody;
 import org.microsoft.qintelipass.services.RedisService;
 import org.microsoft.qintelipass.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
-@Component
 public class MobileCodeLoginStrategy implements ILoginStrategy {
 
     /** 测试用万能验证码，Redis 中无验证码时允许此固定码登录 */
     private static final String TEST_CODE = "123456";
 
     @Autowired
-    private RedisService redisService;
-    
-    @Autowired
     private UserService userService;
-    
+    private final RedisService redisService;
+    public MobileCodeLoginStrategy(RedisService redisService) {
+        this.redisService = redisService;
+    }
+
     public boolean validate(String phone, String smsCode) {
         return phone == null || smsCode == null || phone.length() != 11 || smsCode.length() != 6;
     }
@@ -36,28 +37,31 @@ public class MobileCodeLoginStrategy implements ILoginStrategy {
 
     @Override
     public ResponseBody authenticate(Map<String, Object> params) {
-        String phone = (String) params.get("phone");
-        if (phone == null) {
-            phone = (String) params.get("phone_number");
-        }
-        
-        String smsCode = (String) params.get("code");
-        if (smsCode == null) {
-            smsCode = (String) params.get("sms");
-        }
-        
-        log.info("User phone: {}, User smsCode: {}", phone, smsCode);
-        
-        if (smsCode == null || phone == null){
-            return new ResponseBody(false, "smsCode or phone number could not be NULL.");
+        String phone = readString(params, "phone_number", "phone", "mobile");
+        String smsCode = readString(params, "sms", "smsCode", "sms_code");
+        log.info("SMS login request received.");
+        if (!StringUtils.hasText(smsCode) || !StringUtils.hasText(phone)){
+            return ResponseBody
+                    .builder()
+                    .success(false)
+                    .message("smsCode or phone number could not be NULL.")
+                    .build();
         }
         if (this.validate(phone, smsCode)){
-            return new ResponseBody(false, "Invalid smsCode or phone.");
+            return ResponseBody
+                    .<User>builder()
+                    .success(false)
+                    .message("Invalid smsCode or phone.")
+                    .build();
         }
         
         User user = userService.getUserByPhone(phone);
-        if (user != null && UserStatus.CANCELLED.equals(user.getStatus())) {
-            return new ResponseBody(false, "Your account has been cancelled");
+        if (user != null && UserStatus.DEACTIVATED.equals(user.getStatus())) {
+            return ResponseBody
+                    .<User>builder()
+                    .success(false)
+                    .message("Your account has been deactivated")
+                    .build();
         }
 
         // 验证码校验：优先从 Redis 取真实验证码；若无，允许测试码登录

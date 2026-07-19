@@ -1,12 +1,9 @@
 package org.microsoft.qintelipass.controllers;
 
+import org.microsoft.qintelipass.ITrafficStatService;
 import org.microsoft.qintelipass.models.User;
 import org.microsoft.qintelipass.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,19 +13,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/v1/admin")
 public class UserController {
+    private final UserService userService;
+    private final ITrafficStatService trafficStatService;
     @Autowired
-    private UserService userService;
-    
+    public UserController(UserService userService, ITrafficStatService trafficStatService) {
+        this.userService = userService;
+        this.trafficStatService = trafficStatService;
+    }
+
     @GetMapping("/users")
     public ResponseEntity<?> getUsers(
             @RequestParam(value = "q", required = false) String keyword,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
-        
+
         List<User> allUsers = userService.getAllUsers();
-        
+
         // 搜索过滤
         List<User> filteredUsers = allUsers;
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -38,26 +40,26 @@ public class UserController {
                         || (u.getPhone() != null && u.getPhone().contains(keyword)))
                 .collect(Collectors.toList());
         }
-        
+
         // 分页
         int startIndex = (page - 1) * size;
         int endIndex = Math.min(startIndex + size, filteredUsers.size());
-        
+
         if (startIndex >= filteredUsers.size()) {
             startIndex = 0;
             endIndex = Math.min(size, filteredUsers.size());
         }
-        
+
         List<User> pageUsers = filteredUsers.subList(startIndex, endIndex);
-        
+
         // 返回格式：{ total: 100, items: [...] }
         Map<String, Object> response = new HashMap<>();
         response.put("total", filteredUsers.size());
         response.put("items", pageUsers);
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<?> cancelUser(@PathVariable Long userId) {
         if (userId == null) {
@@ -104,4 +106,14 @@ public class UserController {
             )
         ));
     }
+
+    @GetMapping("/users/active/statistics")
+    public ResponseEntity<?> getActiveUsers(){
+        Map<String, Object> stat = Map.of(
+                "count", trafficStatService.getActiveUsers(),
+                "percent", 0.1
+        );
+        return ResponseEntity.ok().body(stat);
+    }
+
 }

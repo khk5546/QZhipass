@@ -1,6 +1,5 @@
 package org.microsoft.qintelipass.services;
 
-import org.microsoft.qintelipass.enums.UserStatus;
 import org.microsoft.qintelipass.models.User;
 import org.microsoft.qintelipass.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserService {
+public interface UserService {
+    User getUserById(Long userId);
+    User getUserByPhone(String phone);
+    User getUserByWechatOpenId(String wechatOpenId);
+    List<User> getAllUsers();
+    void saveUser(User user);
+    boolean deactivateUser(Long userId);
+    boolean isUserDeactivated(Long userId);
+    User findByUsername(String username);
 
     @Autowired
     private UserRepository userRepository;  // 依赖接口，不关心具体实现
