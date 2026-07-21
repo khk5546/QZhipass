@@ -1,6 +1,5 @@
 package org.microsoft.qintelipass.services;
 
-import org.microsoft.qintelipass.entity.AiModelConfig;
 import org.microsoft.qintelipass.exceptions.BadRequestException;
 import org.microsoft.qintelipass.repository.AiModelConfigRepository;
 import org.microsoft.qintelipass.response.ModelResponse;
@@ -20,7 +19,7 @@ public class AiModelService implements ModelService{
         this.modelConfigRepository = modelConfigRepository;
     }
     @Override
-    public Optional<AiModelConfig> findModelById(Long id){
+    public Optional findModelById(Long id){
         return modelConfigRepository.findById(id);
     }
 
@@ -57,7 +56,7 @@ public class AiModelService implements ModelService{
 
     @Transactional(readOnly = true)
     // 对话详情中只展示仍然可用的模型配置。
-    public Optional<ModelResponse> findAvailableModel(String modelKey) {
+    public Optional findAvailableModel(String modelKey) {
         if (!StringUtils.hasText(modelKey)) {
             return Optional.empty();
         }

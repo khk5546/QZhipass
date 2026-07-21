@@ -14,7 +14,7 @@ public interface CensorRecordRepository extends JpaRepository<CensorRecord, Long
 
     Page<CensorRecord> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Page<CensorRecord> findAllByOrderByCreatedAtDesc();
+    Page<CensorRecord> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<CensorRecord> findByUsernameContainingOrHitKeywordsContainingAllIgnoreCaseOrderByCreatedAtDesc(
             String username, String keyword, Pageable pageable);

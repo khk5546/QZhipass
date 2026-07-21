@@ -7,6 +7,7 @@ package org.microsoft.qintelipass.controllers;
 
 import org.microsoft.qintelipass.models.CensorKeyword;
 import org.microsoft.qintelipass.services.CensorService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +15,9 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/v1/admin/censor"})
-public class CensorAdminController
-{
+public class CensorAdminController {
     private final CensorService censorService;
-
+    @Autowired
     public CensorAdminController(CensorService censorService) {
         this.censorService = censorService;
     }

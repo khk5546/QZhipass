@@ -13,14 +13,13 @@ org\microsoft\qintelipass\services\LoginService.class
 org\microsoft\qintelipass\repository\ConversationMessageRepository.class
 org\microsoft\qintelipass\controllers\UserController.class
 org\microsoft\qintelipass\controllers\AgentController.class
-org\microsoft\qintelipass\entity\AiModelConfig.class
 org\microsoft\qintelipass\util\ExpirationTimeHelper.class
+org\microsoft\qintelipass\scheduler\tasks\DailyAggregationTask.class
 org\microsoft\qintelipass\logins\MobilePasswordStrategy.class
 org\microsoft\qintelipass\response\ResponseBody.class
 org\microsoft\qintelipass\security\JwtAuthenticationFilter.class
 org\microsoft\qintelipass\services\IntegerRedisService.class
 org\microsoft\qintelipass\services\CensorKeywordLoader.class
-org\microsoft\qintelipass\entity\Conversation.class
 org\microsoft\qintelipass\dtos\UserTokenUsageDTO.class
 org\microsoft\qintelipass\repository\TokenDailySummaryRepository.class
 org\microsoft\qintelipass\configs\AISpringConfig.class
@@ -58,10 +57,8 @@ org\microsoft\qintelipass\controllers\AuthControllerV2.class
 org\microsoft\qintelipass\request\UpdateConversationTitleRequest.class
 org\microsoft\qintelipass\models\Models.class
 org\microsoft\qintelipass\configs\DeepSeekChatModel.class
-org\microsoft\qintelipass\entity\ConversationMessage.class
 org\microsoft\qintelipass\security\AuthenticatedUser$AuthenticatedUserBuilder.class
 org\microsoft\qintelipass\exceptions\BadRequestException.class
-org\microsoft\qintelipass\tasks\DailyAggregationTask.class
 org\microsoft\qintelipass\services\UserService.class
 org\microsoft\qintelipass\ILoginStrategy.class
 org\microsoft\qintelipass\services\TokenUsageServiceImpl.class
@@ -69,6 +66,7 @@ org\microsoft\qintelipass\services\UserCacheService.class
 org\microsoft\qintelipass\controllers\CensorKeywordController.class
 org\microsoft\qintelipass\controllers\TokenUsageAdminController.class
 org\microsoft\qintelipass\exceptions\ApiException.class
+org\microsoft\qintelipass\services\ModelService.class
 org\microsoft\qintelipass\configs\AISpringConfig$1.class
 org\microsoft\qintelipass\configs\DeepSeekApiClient$ChatMessage.class
 org\microsoft\qintelipass\models\DailyConfig$DailyConfigBuilder.class
@@ -115,9 +113,7 @@ org\microsoft\qintelipass\response\ConversationMessageResponse.class
 org\microsoft\qintelipass\configs\SecurityConfig.class
 org\microsoft\qintelipass\repository\ConversationRepository.class
 org\microsoft\qintelipass\services\AiModelService.class
-org\microsoft\qintelipass\entity\CensorKeyword.class
 org\microsoft\qintelipass\dtos\UserDTO$UserDTOBuilder.class
-org\microsoft\qintelipass\entity\CensorRecord.class
 org\microsoft\qintelipass\controllers\ModelController.class
 org\microsoft\qintelipass\services\ISmsService.class
 org\microsoft\qintelipass\services\VectorCensorService.class
@@ -127,7 +123,6 @@ org\microsoft\qintelipass\util\QZhiPasswordPattern.class
 org\microsoft\qintelipass\services\AIChatService.class
 org\microsoft\qintelipass\services\ConversationTitleGenerator.class
 org\microsoft\qintelipass\configs\DeepSeekApiClient$EmbeddingUsage.class
-org\microsoft\qintelipass\entity\ConversationMessageRole.class
 org\microsoft\qintelipass\logins\EmailPasswordStrategy.class
 org\microsoft\qintelipass\response\ResponseBody$ResponseBodyBuilder.class
 org\microsoft\qintelipass\services\LocalConversationTitleGenerator.class

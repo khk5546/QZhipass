@@ -67,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
                                 .userId(user.getId())
                                 .username(user.getName())
-                                .password(user.getPassword())
+                                .password(user.getPasswordHash())
                                 .build();
 
                         UsernamePasswordAuthenticationToken authenticationToken =

@@ -66,7 +66,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid user ID"));
         }
         
-        boolean success = userService.cancelUser(userId);
+        boolean success = userService.deactivateUser(userId);
         if (success) {
             return ResponseEntity.ok(Map.of("success", true, "message", "User cancelled successfully"));
         }

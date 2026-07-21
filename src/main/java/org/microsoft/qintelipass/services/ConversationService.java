@@ -87,7 +87,7 @@ public class ConversationService {
                 .stream()
                 .map(ConversationMessageResponse::from)
                 .toList();
-        ModelResponse model = aiModelService.findAvailableModel(conversation.getModelKey()).orElse(null);
+        ModelResponse model = (ModelResponse) aiModelService.findAvailableModel(conversation.getModelKey()).orElse(null);
         return new ConversationDetailResponse(ConversationResponse.from(conversation), messages, model);
     }
 

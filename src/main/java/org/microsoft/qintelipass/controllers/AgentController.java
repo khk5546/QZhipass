@@ -2,7 +2,7 @@ package org.microsoft.qintelipass.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.microsoft.qintelipass.dtos.UserTokenUsageDTO;
-import org.microsoft.qintelipass.entity.AiModelConfig;
+import org.microsoft.qintelipass.models.AiModelConfig;
 import org.microsoft.qintelipass.response.ResponseBody;
 import org.microsoft.qintelipass.security.SecurityUtil;
 import org.microsoft.qintelipass.services.AiModelService;

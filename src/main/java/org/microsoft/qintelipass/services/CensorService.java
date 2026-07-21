@@ -7,6 +7,7 @@ import org.microsoft.qintelipass.repository.CensorKeywordRepository;
 import org.microsoft.qintelipass.repository.CensorRecordRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +58,7 @@ public class CensorService {
 
     @Transactional(readOnly = true)
     public List<CensorRecord> listRecords() {
-        return (List<CensorRecord>) censorRecordRepository.findAllByOrderByCreatedAtDesc();
+        return (List<CensorRecord>) censorRecordRepository.findAllByOrderByCreatedAtDesc(Pageable.ofSize(1));
     }
 
     
@@ -133,7 +134,7 @@ public class CensorService {
 
     @Transactional(readOnly = true)
     public Page<CensorRecordDTO> listAllRecords(int page, int size) {
-        return censorRecordRepository.findAllByOrderByCreatedAtDesc()
+        return censorRecordRepository.findAllByOrderByCreatedAtDesc(Pageable.ofSize(size).withPage(page))
                 .map(CensorRecordDTO::from);
     }
 

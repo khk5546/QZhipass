@@ -49,7 +49,7 @@ public class PasswordLoginStrategy implements ILoginStrategy {
         }
 
         // BCrypt password verification
-        String storedPassword = user.getPassword();
+        String storedPassword = user.getPasswordHash();
         if (storedPassword == null || storedPassword.isEmpty()) {
             return ResponseBody.builder().success(true).message("Password not set. Please use SMS login.").build();
         }

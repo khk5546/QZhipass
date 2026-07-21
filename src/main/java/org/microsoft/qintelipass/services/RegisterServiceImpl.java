@@ -29,7 +29,7 @@ public class RegisterServiceImpl implements IRegisterable {
                 .name(request.getName())
                 .phone(request.getPhone())
                 .department(request.getDepartment())
-                .password(hashedPassword)
+                .passwordHash(hashedPassword)
                 .build();
         try {
             userService.saveUser(user);
