@@ -548,7 +548,7 @@ const agentLabel = computed(() => agents.find(a => a.value === selectedAgent.val
           <div class="relative">
             <textarea
               v-model="inputText"
-              class="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-20 text-sm text-gray-800 placeholder-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-100"
+              class="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-20 text-sm text-gray-800 placeholder-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-100"
               rows="3"
               placeholder="输入您的问题或指令 (Shift + Enter 换行)..."
               :maxlength="maxChars"
